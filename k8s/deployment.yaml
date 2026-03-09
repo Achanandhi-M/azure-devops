@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-web-app
+  namespace: sample-app
+  labels:
+    app: sample-web-app
+    app.kubernetes.io/name: sample-web-app
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: azure-devops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sample-web-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1           # Allow 1 extra pod during update
+      maxUnavailable: 0     # Never go below desired replicas during update
+  template:
+    metadata:
+      labels:
+        app: sample-web-app
+        app.kubernetes.io/name: sample-web-app
+    spec:
+      # ── Security Context ─────────────────────────────────────────────────────
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+
+      containers:
+        - name: sample-web-app
+          # The image tag is replaced by the CI/CD pipeline using sed or envsubst
+          image: YOUR_ACR_LOGIN_SERVER/sample-web-app:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # ── Environment Variables ─────────────────────────────────────────────
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+
+          # ── Resource Limits ───────────────────────────────────────────────────
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+          # ── Health Probes ─────────────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # ── Security ──────────────────────────────────────────────────────────
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      # ── Pod Scheduling ────────────────────────────────────────────────────────
+      terminationGracePeriodSeconds: 30
+      restartPolicy: Always

@@ -1,0 +1,39 @@
+# Terraform state files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Sensitive variable files (never commit real secrets)
+*.auto.tfvars
+terraform/environments/**/*.tfvars
+
+# .NET build artifacts
+src/**/bin/
+src/**/obj/
+src/**/*.user
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Docker
+.dockerignore
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Azure CLI config files
+.azure/
+
+# Editor directories and files
+*.local
