@@ -7,6 +7,7 @@
 ###############################################################################
 
 # ── Project ───────────────────────────────────────────────────────────────────
+
 resource "azuredevops_project" "main" {
   name               = var.project_name
   description        = var.project_description
@@ -73,7 +74,7 @@ resource "azuredevops_build_definition" "main" {
 
   repository {
     repo_type             = "GitHub"
-    repo_id               = replace(var.github_repo_url, "https://github.com/", "") # "user/repo"
+    repo_id               = replace(replace(var.github_repo_url, "https://github.com/", ""), ".git", "") # "user/repo"
     branch_name           = "refs/heads/main"
     yml_path              = "azure-pipelines.yml"
     service_connection_id = azuredevops_serviceendpoint_github.github.id
@@ -120,5 +121,24 @@ resource "azuredevops_pipeline_authorization" "github" {
   project_id  = azuredevops_project.main.id
   resource_id = azuredevops_serviceendpoint_github.github.id
   type        = "endpoint"
+  pipeline_id = azuredevops_build_definition.main.id
+}
+
+# ── Self-Hosted Agent Pool ────────────────────────────────────────────────────
+resource "azuredevops_agent_pool" "vm_pool" {
+  name           = "self-hosted-pool"
+  auto_provision = false
+  auto_update    = true
+}
+
+resource "azuredevops_agent_queue" "vm_queue" {
+  project_id    = azuredevops_project.main.id
+  agent_pool_id = azuredevops_agent_pool.vm_pool.id
+}
+
+resource "azuredevops_pipeline_authorization" "vm_queue" {
+  project_id  = azuredevops_project.main.id
+  resource_id = azuredevops_agent_queue.vm_queue.id
+  type        = "queue"
   pipeline_id = azuredevops_build_definition.main.id
 }

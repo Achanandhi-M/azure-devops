@@ -8,14 +8,14 @@ output "project_name" {
   value       = azuredevops_project.main.name
 }
 
-output "repo_id" {
-  description = "Git repository ID."
-  value       = azuredevops_git_repository.main.id
+output "github_service_connection_id" {
+  description = "ID of the GitHub service connection."
+  value       = azuredevops_serviceendpoint_github.github.id
 }
 
-output "repo_url" {
-  description = "Remote clone URL for the Git repository."
-  value       = azuredevops_git_repository.main.remote_url
+output "github_service_connection_name" {
+  description = "Name of the GitHub service connection."
+  value       = azuredevops_serviceendpoint_github.github.service_endpoint_name
 }
 
 output "pipeline_id" {

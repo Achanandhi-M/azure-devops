@@ -71,7 +71,7 @@ variable "acr_sku" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the AKS cluster."
   type        = string
-  default     = "1.28"
+  default     = "1.35"
 }
 
 variable "aks_node_count" {
@@ -100,7 +100,7 @@ variable "aks_min_node_count" {
 variable "aks_max_node_count" {
   description = "Maximum node count for cluster autoscaler."
   type        = number
-  default     = 3
+  default     = 2
 }
 
 # ── Azure DevOps ──────────────────────────────────────────────────────────────
@@ -149,6 +149,20 @@ variable "github_repo_url" {
 
 variable "github_pat" {
   description = "GitHub Personal Access Token with 'repo' scope — for the Azure DevOps GitHub service connection."
+  type        = string
+  sensitive   = true
+}
+
+# ── Self-Hosted VM Agent ──────────────────────────────────────────────────────
+
+variable "azdo_pat" {
+  description = "Azure DevOps Personal Access Token with 'Agent Pools (Read & Manage)' scope to register the self-hosted agent."
+  type        = string
+  sensitive   = true
+}
+
+variable "vm_admin_password" {
+  description = "Admin password for the self-hosted Ubuntu VM agent."
   type        = string
   sensitive   = true
 }

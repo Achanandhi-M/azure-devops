@@ -33,9 +33,9 @@ output "azure_devops_project_name" {
   value       = module.azure_devops.project_name
 }
 
-output "azure_devops_repo_url" {
-  description = "Clone URL for the Azure DevOps Git repository."
-  value       = module.azure_devops.repo_url
+output "github_service_connection" {
+  description = "Name of the GitHub service connection in Azure DevOps."
+  value       = module.azure_devops.github_service_connection_name
 }
 
 output "get_credentials_command" {

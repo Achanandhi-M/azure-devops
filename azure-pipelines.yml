@@ -47,7 +47,7 @@ stages:
       - job: BuildAndPush
         displayName: "Build, Test & Push"
         pool:
-          vmImage: "ubuntu-latest"
+          name: "self-hosted-pool"
 
         steps:
           # ── 1. Restore & Build ──────────────────────────────────────────────
@@ -120,7 +120,7 @@ stages:
       - deployment: DeployToAKS
         displayName: "Deploy to AKS (sample-app namespace)"
         pool:
-          vmImage: "ubuntu-latest"
+          name: "self-hosted-pool"
 
         # Deployment strategy — tracks deployment history in Azure DevOps
         environment: "aks-dev"   # Create this environment in Azure DevOps UI first

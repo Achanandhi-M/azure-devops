@@ -32,8 +32,12 @@ provider "azurerm" {
   }
 }
 
-# Azure DevOps provider reads org_service_url and personal_access_token
-# from environment variables:
-#   AZDO_ORG_SERVICE_URL  — e.g. https://dev.azure.com/myorg
-#   AZDO_PERSONAL_ACCESS_TOKEN
-provider "azuredevops" {}
+variable "azdo_org_url" {
+  type        = string
+  description = "Azure DevOps organization URL"
+}
+
+provider "azuredevops" {
+  org_service_url       = var.azdo_org_url
+  personal_access_token = var.azdo_pat
+}

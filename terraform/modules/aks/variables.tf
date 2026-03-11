@@ -16,7 +16,7 @@ variable "resource_group_name" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the cluster."
   type        = string
-  default     = "1.28"
+  default     = "1.35"
 }
 
 variable "subnet_id" {
@@ -45,7 +45,7 @@ variable "min_node_count" {
 variable "max_node_count" {
   description = "Maximum nodes for autoscaler."
   type        = number
-  default     = 3
+  default     = 2
 }
 
 variable "tags" {

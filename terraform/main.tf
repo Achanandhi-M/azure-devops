@@ -96,3 +96,22 @@ module "azure_devops" {
 
   depends_on = [module.aks, module.acr]
 }
+
+# ── Module: VM Agent (Self-Hosted Pool) ───────────────────────────────────────
+module "vm_agent" {
+  source = "./modules/vm-agent"
+
+  name                = "agent-${local.unique_name}"
+  location            = var.location
+  resource_group_name = module.networking.resource_group_name
+  subnet_id           = module.networking.aks_subnet_id
+  
+  admin_password      = var.vm_admin_password
+  azdo_org_url        = var.azdo_org_url
+  azdo_pat            = var.azdo_pat
+  azdo_pool_name      = "self-hosted-pool"
+
+  tags = local.common_tags
+
+  depends_on = [module.networking, module.azure_devops]
+}
