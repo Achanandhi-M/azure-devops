@@ -80,25 +80,20 @@ stages:
               inlineScript: |
                 az acr login --name $(ACR_LOGIN_SERVER)
 
-          # ── 4. Docker: Build image ──────────────────────────────────────────
-          - task: Docker@2
+          # ── 4. Docker: Build & Tag image ──────────────────────────────────
+          - script: |
+              docker build \
+                -t $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):$(TAG) \
+                -t $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):latest \
+                -f $(DOCKERFILE_PATH) \
+                $(DOCKER_BUILD_CONTEXT)
             displayName: "Docker Build"
-            inputs:
-              command: build
-              buildContext: $(DOCKER_BUILD_CONTEXT)
-              dockerfile: $(DOCKERFILE_PATH)
-              tags: |
-                $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):$(TAG)
-                $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):latest
 
           # ── 5. Docker: Push to ACR ──────────────────────────────────────────
-          - task: Docker@2
+          - script: |
+              docker push $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):$(TAG)
+              docker push $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):latest
             displayName: "Docker Push to ACR"
-            inputs:
-              command: push
-              tags: |
-                $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):$(TAG)
-                $(ACR_LOGIN_SERVER)/$(IMAGE_REPOSITORY):latest
 
           # ── 6. Publish k8s manifests as pipeline artifact ───────────────────
           - task: PublishPipelineArtifact@1
