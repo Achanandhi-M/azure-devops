@@ -157,22 +157,17 @@ stages:
                     cat $(System.DefaultWorkingDirectory)/k8s/deployment.yaml
                   displayName: "Update Image Tag in Manifest"
 
-                # ── 4. Apply manifests ───────────────────────────────────────
-                - task: KubernetesManifest@1
+                # ── 4. Apply manifests (using kubectl directly) ──────────────
+                - script: |
+                    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/namespace.yaml
                   displayName: "Apply Namespace"
-                  inputs:
-                    action: deploy
-                    namespace: default
-                    manifests: $(System.DefaultWorkingDirectory)/k8s/namespace.yaml
 
-                - task: KubernetesManifest@1
+                - script: |
+                    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/deployment.yaml \
+                      -n $(K8S_NAMESPACE)
+                    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/service.yaml \
+                      -n $(K8S_NAMESPACE)
                   displayName: "Deploy Application"
-                  inputs:
-                    action: deploy
-                    namespace: $(K8S_NAMESPACE)
-                    manifests: |
-                      $(System.DefaultWorkingDirectory)/k8s/deployment.yaml
-                      $(System.DefaultWorkingDirectory)/k8s/service.yaml
 
                 # ── 5. Wait and print external IP ────────────────────────────
                 - script: |
