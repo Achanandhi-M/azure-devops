@@ -1,5 +1,8 @@
 #!/bin/bash
+set -ex
 export DEBIAN_FRONTEND=noninteractive
+
+echo "=== Cloud-init: Starting agent provisioning ==="
 
 # 1. Update and install basic tools
 apt-get update -y
@@ -25,20 +28,35 @@ rm packages-microsoft-prod.deb
 apt-get update
 apt-get install -y dotnet-sdk-8.0
 
-# 6. Install Azure DevOps Agent
+# 6. Install Azure DevOps Agent (4.x — required for Azure DevOps Services)
+echo "=== Fetching agent download URL from Azure DevOps API ==="
 mkdir -p /opt/azdo/agent
 cd /opt/azdo/agent
 
-# Get the latest Linux x64 agent release dynamically from GitHub API
-AGENT_URL=$(curl -s https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq -r '.assets[] | select(.name | contains("linux-x64")) | .browser_download_url')
-wget -O agent.tar.gz $AGENT_URL
+# Use the Azure DevOps REST API to get the latest agent package URL
+AGENT_URL=$(curl -s -u "user:${AZDO_PAT}" \
+  "${AZDO_URL}/_apis/distributedtask/packages/agent?platform=linux-x64&\$top=1&api-version=7.1" \
+  | jq -r '.value[0].downloadUrl')
+
+echo "Agent download URL: $AGENT_URL"
+
+if [ -z "$AGENT_URL" ] || [ "$AGENT_URL" = "null" ]; then
+  echo "ERROR: Could not determine agent download URL from API. Exiting."
+  exit 1
+fi
+
+wget -O agent.tar.gz "$AGENT_URL"
 tar zxvf agent.tar.gz
 rm agent.tar.gz
+
+# Install agent dependencies
+./bin/installdependencies.sh
 
 # Ensure agent directory is owned by azureuser
 chown -R azureuser:azureuser /opt/azdo
 
 # Configure the agent as 'azureuser'
+echo "=== Configuring agent ==="
 sudo -i -u azureuser bash << EOF
 cd /opt/azdo/agent
 ./config.sh --unattended \
@@ -52,9 +70,9 @@ cd /opt/azdo/agent
   --replace
 EOF
 
-# Install and start the agent service (must run as root for installation, but mapped to azureuser)
+# Install and start the agent service
+echo "=== Installing and starting agent service ==="
 ./svc.sh install azureuser
 ./svc.sh start
 
-# Make doubly sure docker permissions took effect for the agent service
-systemctl restart vsts.agent.*.service
+echo "=== Cloud-init: Agent provisioning complete ==="

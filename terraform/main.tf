@@ -107,7 +107,8 @@ module "vm_agent" {
   subnet_id           = module.networking.aks_subnet_id
   
   admin_password      = var.vm_admin_password
-  azdo_org_url        = var.azdo_org_url
+  azdo_org_url        = "https://dev.azure.com/${var.azdo_org_name}"
+
   azdo_pat            = var.azdo_pat
   azdo_pool_name      = "self-hosted-pool"
 
